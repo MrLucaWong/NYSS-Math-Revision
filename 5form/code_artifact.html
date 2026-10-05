@@ -1,0 +1,1463 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>閉合電路與電子流動探究實驗室 | Middle School Science Lab</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        lab: {
+                            bg: '#0f172a',
+                            card: '#1e293b',
+                            accent: '#38bdf8',
+                            yellow: '#facc15',
+                            glow: '#eab308',
+                            red: '#ef4444',
+                            green: '#22c55e'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans TC', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 15px rgba(250, 204, 21, 0.4); transform: scale(1); }
+            50% { box-shadow: 0 0 35px rgba(250, 204, 21, 0.95); transform: scale(1.03); }
+        }
+        @keyframes shortCircuitSpark {
+            0%, 100% { background-color: rgba(239, 68, 68, 0.2); }
+            50% { background-color: rgba(239, 68, 68, 0.65); }
+        }
+        @keyframes portPulse {
+            0%, 100% { r: 9px; opacity: 0.8; }
+            50% { r: 14px; opacity: 1; }
+        }
+        .bulb-glow {
+            animation: pulseGlow 1.2s infinite ease-in-out;
+        }
+        .short-circuit-alert {
+            animation: shortCircuitSpark 0.35s infinite;
+        }
+        canvas {
+            touch-action: none;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans flex flex-col justify-between selection:bg-sky-500 selection:text-white">
+
+    <!-- Header Navigation -->
+    <header class="bg-slate-800/90 backdrop-blur border-b border-slate-700 sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between h-auto md:h-16 py-2 md:py-0">
+            <div class="flex items-center space-x-3 mb-2 md:mb-0">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-yellow-400 to-sky-400 flex items-center justify-center text-slate-900 font-bold text-xl shadow-lg">
+                    ⚡
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold bg-gradient-to-r from-sky-400 via-amber-300 to-yellow-400 bg-clip-text text-transparent">
+                        閉合電路與電子流動探究實驗室
+                    </h1>
+                    <p class="text-xs text-slate-400">初中科學互動數位講堂 & 磁吸電路模擬器</p>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <nav class="flex space-x-1 sm:space-x-2 bg-slate-900/80 p-1.5 rounded-xl border border-slate-700">
+                <button onclick="switchTab('principles')" id="nav-principles" class="tab-btn px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition flex items-center space-x-1.5 bg-sky-600 text-white shadow">
+                    <i class="fa-solid fa-book-open"></i>
+                    <span>📖 原理講堂</span>
+                </button>
+                <button onclick="switchTab('sandbox')" id="nav-sandbox" class="tab-btn px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition flex items-center space-x-1.5 text-slate-300 hover:text-white hover:bg-slate-800">
+                    <i class="fa-solid fa-flask"></i>
+                    <span>🧪 磁吸電路沙盒</span>
+                </button>
+                <button onclick="switchTab('challenges')" id="nav-challenges" class="tab-btn px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition flex items-center space-x-1.5 text-slate-300 hover:text-white hover:bg-slate-800">
+                    <i class="fa-solid fa-bullseye"></i>
+                    <span>🎯 思考陷阱關卡</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full">
+
+        <!-- TAB 1: 📖 科學原理講堂 -->
+        <section id="tab-principles" class="tab-content space-y-8">
+            <!-- Hero Banner -->
+            <div class="bg-gradient-to-r from-slate-800 via-slate-800 to-indigo-950 p-6 sm:p-8 rounded-2xl border border-slate-700 shadow-xl relative overflow-hidden">
+                <div class="max-w-3xl relative z-10 space-y-3">
+                    <span class="px-3 py-1 bg-amber-500/20 text-amber-300 text-xs font-semibold rounded-full border border-amber-500/30">
+                        核心科學概念：閉合迴路 (Closed Circuit)
+                    </span>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold text-white">為什麼只有「閉合電路」才能讓小燈泡發光？</h2>
+                    <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+                        金屬導線內部充盈著無數可自由移動的微觀粒子——<strong class="text-amber-300">自由電子 ($e^-$)</strong>。電池如同「電子推動幫浦」，負極排斥電子、正極吸引電子。只有當電路無任何斷口且正確經過用電器時，電子才能進行持續的<strong>單向定向流動</strong>！
+                    </p>
+                </div>
+            </div>
+
+            <!-- Principle Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Card 1: Water Pipe Analogy -->
+                <div class="bg-slate-800/80 border border-slate-700 rounded-2xl p-6 flex flex-col justify-between hover:border-sky-500/50 transition shadow-lg">
+                    <div>
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="p-3 bg-sky-500/10 rounded-xl text-sky-400 text-xl">
+                                <i class="fa-solid fa-water"></i>
+                            </div>
+                            <h3 class="text-base font-bold text-white">1. 水管迴路比喻</h3>
+                        </div>
+                        <p class="text-slate-300 text-xs sm:text-sm leading-relaxed mb-4">
+                            導體內的電荷就像充盈在封閉水管內的水分子。如果水管中間被切斷（開路），水流就會在出口處堆積堵塞，水泵（電池）便無法繼續驅動整體水流。
+                        </p>
+                        <ul class="text-xs text-slate-400 space-y-2 bg-slate-900/60 p-3 rounded-xl border border-slate-700/50">
+                            <li class="flex items-start space-x-2">
+                                <span class="text-amber-400 font-bold">▶</span>
+                                <span><strong>電池（幫浦）</strong>：提供驅動電荷移動的「電壓」。</span>
+                            </li>
+                            <li class="flex items-start space-x-2">
+                                <span class="text-amber-400 font-bold">▶</span>
+                                <span><strong>閉合迴路</strong>：電荷必須「有來有回」才能形成持續電流。</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Card 2: Electron Flow vs Conventional Current -->
+                <div class="bg-slate-800/80 border border-slate-700 rounded-2xl p-6 flex flex-col justify-between hover:border-amber-500/50 transition shadow-lg">
+                    <div>
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="p-3 bg-amber-500/10 rounded-xl text-amber-400 text-xl">
+                                <i class="fa-solid fa-atom"></i>
+                            </div>
+                            <h3 class="text-base font-bold text-white">2. 電子流 vs 傳統電流</h3>
+                        </div>
+                        <p class="text-slate-300 text-xs sm:text-sm leading-relaxed mb-4">
+                            金屬中真正流動的是帶負電的<strong class="text-amber-300">自由電子</strong>。電子被電池負極推開、被正極吸引，因此電子流與歷史規定的「傳統電流」方向相反！
+                        </p>
+                        <div class="space-y-2 text-xs">
+                            <div class="bg-slate-900/80 p-2.5 rounded-xl border border-sky-500/30">
+                                <div class="font-bold text-sky-400 mb-0.5">⚡ 電子流 (真實移動)</div>
+                                <p class="text-slate-400">電池 <span class="text-rose-400 font-bold">負極 (–)</span> ➔ 外電路 ➔ <span class="text-amber-400 font-bold">正極 (+)</span></p>
+                            </div>
+                            <div class="bg-slate-900/80 p-2.5 rounded-xl border border-amber-500/30">
+                                <div class="font-bold text-amber-400 mb-0.5">➡️ 傳統電流 (人為規定)</div>
+                                <p class="text-slate-400">電池 <span class="text-amber-400 font-bold">正極 (+)</span> ➔ 外電路 ➔ <span class="text-rose-400 font-bold">負極 (–)</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Bulb Anatomy Cutaway -->
+                <div class="bg-slate-800/80 border border-slate-700 rounded-2xl p-6 flex flex-col justify-between hover:border-emerald-500/50 transition shadow-lg">
+                    <div>
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 text-xl">
+                                <i class="fa-solid fa-lightbulb"></i>
+                            </div>
+                            <h3 class="text-base font-bold text-white">3. 小燈泡雙接點構造</h3>
+                        </div>
+                        <p class="text-slate-300 text-xs sm:text-sm leading-relaxed mb-3">
+                            小燈泡內部有兩根支架支撐鎢絲：一根連接到<strong>側面金屬螺紋</strong>，另一根連接到<strong>底部金屬觸點</strong>。
+                        </p>
+                        <div class="bg-slate-900/90 p-3 rounded-xl border border-emerald-500/30 text-xs space-y-1 text-emerald-200">
+                            <div class="font-bold flex items-center space-x-1 text-emerald-400">
+                                <i class="fa-solid fa-circle-check"></i>
+                                <span>關鍵通電規則：</span>
+                            </div>
+                            <p>電流必須從一個接點進入、貫穿燈丝，再從另一個接點流出，燈泡才會發光！</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Microscopic Electron Simulation -->
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+                            <span>🔬 微觀金屬導線電子移動模擬</span>
+                            <span class="text-xs bg-indigo-500/20 text-indigo-300 px-2.5 py-0.5 rounded-full border border-indigo-500/30">動態對比</span>
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-1">觀察在「斷路」與「閉合通電」狀態下，自由電子 😊 的運動模式差異。</p>
+                    </div>
+
+                    <!-- Toggle Control -->
+                    <div class="flex items-center space-x-2 bg-slate-900 p-1.5 rounded-xl border border-slate-700">
+                        <button id="micro-open-btn" onclick="setMicroState(false)" class="px-4 py-2 rounded-lg text-xs font-bold transition bg-rose-600 text-white shadow">
+                            🚫 斷路狀態 (無電場)
+                        </button>
+                        <button id="micro-closed-btn" onclick="setMicroState(true)" class="px-4 py-2 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white">
+                            ⚡ 閉合電路 (電場建立)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Microscopic Canvas -->
+                <div class="relative bg-slate-950 rounded-xl overflow-hidden border border-slate-800">
+                    <canvas id="micro-canvas" width="800" height="220" class="w-full h-auto block"></canvas>
+                    <div id="micro-status-tag" class="absolute bottom-3 left-3 bg-slate-900/90 backdrop-blur px-3 py-1.5 rounded-lg border border-slate-700 text-xs font-medium text-slate-300">
+                        無定向推力：自由電子進行無規則熱運動，無淨電流產生。
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: 🧪 磁吸電路沙盒 -->
+        <section id="tab-sandbox" class="tab-content hidden space-y-6">
+            <!-- Sandbox Header Toolbar -->
+            <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 flex flex-wrap items-center justify-between gap-4 shadow-lg">
+                <div class="flex items-center space-x-3">
+                    <div class="p-2.5 bg-amber-500/20 text-amber-400 rounded-xl">
+                        <i class="fa-solid fa-wand-magic-sparkles text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-base font-bold text-white flex items-center space-x-2">
+                            <span>磁吸式互動電路實驗室</span>
+                            <span class="text-[11px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/30">智慧磁吸 Snap-to-Port</span>
+                        </h2>
+                        <p class="text-xs text-slate-400">點擊新增元件，靠近端點會產生黃色磁吸效果與語音導引提示</p>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <!-- Connection Precision Mode Switcher -->
+                    <button onclick="toggleEasyMode()" id="btn-easy-mode" class="px-3.5 py-1.5 bg-amber-500/20 border-2 border-amber-500 rounded-xl text-xs font-bold text-amber-300 transition flex items-center space-x-1.5 shadow">
+                        <i class="fa-solid fa-magnet"></i>
+                        <span id="easy-mode-text">模式：簡易磁吸導引 (推薦初學者)</span>
+                    </button>
+
+                    <button onclick="toggleSymbolMode()" id="btn-symbol-mode" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-xs font-semibold text-slate-200 transition flex items-center space-x-1.5 border border-slate-600">
+                        <i class="fa-solid fa-shapes"></i>
+                        <span id="symbol-mode-text">切換為：電路符號</span>
+                    </button>
+
+                    <button onclick="loadSampleCircuit()" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 rounded-xl text-xs font-semibold text-white transition flex items-center space-x-1.5 shadow">
+                        <i class="fa-solid fa-rotate-right"></i>
+                        <span>載入標準通路</span>
+                    </button>
+
+                    <button onclick="clearSandbox()" class="px-3 py-1.5 bg-rose-600/80 hover:bg-rose-600 rounded-xl text-xs font-semibold text-white transition flex items-center space-x-1.5">
+                        <i class="fa-solid fa-trash-can"></i>
+                        <span>清空畫布</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Workspace Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <!-- Left Sidebar: Palette -->
+                <div class="lg:col-span-1 bg-slate-800 p-4 rounded-2xl border border-slate-700 space-y-4 shadow-xl">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                        <span>新增元件工具箱</span>
+                        <span class="text-[10px] bg-slate-700 px-2 py-0.5 rounded text-slate-300">點擊放置</span>
+                    </h3>
+
+                    <div class="grid grid-cols-1 gap-2.5">
+                        <!-- Battery -->
+                        <button onclick="addComponent('battery')" class="p-3 bg-slate-900/80 hover:bg-slate-700/80 border border-slate-700 rounded-xl flex items-center justify-between group transition">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-2xl">🔋</span>
+                                <div class="text-left">
+                                    <div class="text-xs font-bold text-slate-200 group-hover:text-amber-400">1.5V 直流電池</div>
+                                    <div class="text-[10px] text-slate-400">含 (+) 正極與 (–) 負極</div>
+                                </div>
+                            </div>
+                            <i class="fa-solid fa-plus text-slate-500 text-xs"></i>
+                        </button>
+
+                        <!-- Lightbulb -->
+                        <button onclick="addComponent('bulb')" class="p-3 bg-slate-900/80 hover:bg-slate-700/80 border border-slate-700 rounded-xl flex items-center justify-between group transition">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-2xl">💡</span>
+                                <div class="text-left">
+                                    <div class="text-xs font-bold text-slate-200 group-hover:text-amber-400">雙接點小燈泡</div>
+                                    <div class="text-[10px] text-amber-300 font-semibold">接點1:螺紋 / 接點2:底點</div>
+                                </div>
+                            </div>
+                            <i class="fa-solid fa-plus text-slate-500 text-xs"></i>
+                        </button>
+
+                        <!-- Switch -->
+                        <button onclick="addComponent('switch')" class="p-3 bg-slate-900/80 hover:bg-slate-700/80 border border-slate-700 rounded-xl flex items-center justify-between group transition">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-2xl">🔘</span>
+                                <div class="text-left">
+                                    <div class="text-xs font-bold text-slate-200 group-hover:text-sky-400">單刀閘刀開關</div>
+                                    <div class="text-[10px] text-slate-400">點擊閘刀可切換通斷</div>
+                                </div>
+                            </div>
+                            <i class="fa-solid fa-plus text-slate-500 text-xs"></i>
+                        </button>
+
+                        <!-- Wires Selection -->
+                        <div class="pt-2 border-t border-slate-700/60">
+                            <label class="text-[11px] font-bold text-slate-400 mb-2 block">導線材質選擇：</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="setWireTool('copper')" id="tool-wire-copper" class="p-2.5 bg-amber-500/20 border-2 border-amber-500 rounded-xl text-xs font-bold text-amber-300 flex flex-col items-center justify-center gap-1 shadow">
+                                    <span>🔌 銅芯導線</span>
+                                    <span class="text-[9px] font-normal text-amber-200/70">良好的良導體</span>
+                                </button>
+                                <button onclick="setWireTool('insulated')" id="tool-wire-insulated" class="p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs font-bold text-slate-400 hover:text-slate-200 flex flex-col items-center justify-center gap-1">
+                                    <span>🚫 塑膠絕緣線</span>
+                                    <span class="text-[9px] font-normal text-slate-500">外皮阻斷電流</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Connection Tips -->
+                    <div class="p-3 bg-slate-900/80 rounded-xl border border-slate-700/60 text-xs text-slate-300 space-y-1.5">
+                        <div class="font-bold text-amber-300 flex items-center space-x-1">
+                            <i class="fa-solid fa-lightbulb"></i>
+                            <span>燈泡接線特別指南：</span>
+                        </div>
+                        <p class="text-slate-400">小燈泡必須分別接上：</p>
+                        <div class="text-[11px] font-semibold text-sky-300 pl-2">1. 側面金屬螺紋 🟡</div>
+                        <div class="text-[11px] font-semibold text-emerald-300 pl-2">2. 底部金屬觸點 🟢</div>
+                        <p class="text-[10px] text-slate-500 mt-1">靠近端點 25px 範圍內會產生自動磁吸 (Snap)!</p>
+                    </div>
+                </div>
+
+                <!-- Center: Interactive Canvas -->
+                <div class="lg:col-span-3 flex flex-col space-y-4">
+                    <div class="relative bg-slate-950 rounded-2xl border border-slate-700 overflow-hidden shadow-2xl h-[480px] flex items-center justify-center" id="canvas-container">
+                        <canvas id="sandbox-canvas" width="800" height="480" class="w-full h-full cursor-crosshair"></canvas>
+
+                        <!-- Canvas Overlay Floating Status -->
+                        <div id="sandbox-status-badge" class="absolute top-4 left-4 px-4 py-2.5 rounded-xl text-xs font-bold shadow-2xl backdrop-blur flex items-center space-x-2 bg-slate-900/90 text-slate-300 border border-slate-700">
+                            <span class="w-2.5 h-2.5 rounded-full bg-slate-500 animate-pulse"></span>
+                            <span id="sandbox-status-text">電路準備中：請從端點拉出導線進行連接</span>
+                        </div>
+                    </div>
+
+                    <!-- Diagnostic Console Panel with Bulb Cutaway diagram -->
+                    <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-xl">
+                        <h3 class="text-sm font-bold text-white mb-3 flex items-center justify-between">
+                            <span class="flex items-center space-x-2">
+                                <i class="fa-solid fa-microchip text-sky-400"></i>
+                                <span>電路狀態與內部燈絲電流監測 Diagnostic Console</span>
+                            </span>
+                            <span id="diagnostic-tag" class="text-xs px-2.5 py-0.5 rounded-full bg-slate-700 text-slate-300 font-mono">
+                                STATUS: IDLE
+                            </span>
+                        </h3>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs mb-3">
+                            <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-700">
+                                <div class="text-slate-400 mb-1">迴路閉合狀態</div>
+                                <div id="diag-loop" class="font-bold text-slate-200">未形成閉合圈</div>
+                            </div>
+                            <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-700">
+                                <div class="text-slate-400 mb-1">電池驅動總電壓</div>
+                                <div id="diag-voltage" class="font-bold text-amber-400">0.0 V</div>
+                            </div>
+                            <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-700">
+                                <div class="text-slate-400 mb-1">燈泡內部燈絲電流</div>
+                                <div id="diag-filament" class="font-bold text-slate-200">未貫穿燈絲</div>
+                            </div>
+                            <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-700">
+                                <div class="text-slate-400 mb-1">短路危險警示</div>
+                                <div id="diag-short" class="font-bold text-emerald-400">安全 (無短路)</div>
+                            </div>
+                        </div>
+
+                        <!-- Detailed Feedback -->
+                        <div id="diag-detail-box" class="p-3 rounded-xl bg-slate-900/70 border border-slate-700 text-xs text-slate-300 leading-relaxed">
+                            💡 接線引導：請確保導線分別連接至小燈泡的<strong>側面螺紋</strong>與<strong>底部觸點</strong>，形成完整通電路徑。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: 🎯 思考陷阱挑戰關卡 -->
+        <section id="tab-challenges" class="tab-content hidden space-y-6">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-amber-950/40 via-slate-800 to-slate-800 p-6 rounded-2xl border border-amber-500/30 shadow-xl">
+                <div class="max-w-3xl space-y-2">
+                    <span class="px-3 py-1 bg-amber-500/20 text-amber-300 text-xs font-semibold rounded-full border border-amber-500/30">
+                        初中生電路誤區診斷測驗
+                    </span>
+                    <h2 class="text-2xl font-extrabold text-white">高難度實物電路思考陷阱題</h2>
+                    <p class="text-slate-300 text-sm leading-relaxed">
+                        看似「接成一個圈」的電路不一定能亮！點擊切換關卡，先進行<strong>預測投票</strong>，再開啟模擬進行科學驗證。
+                    </p>
+                </div>
+            </div>
+
+            <!-- Challenge Grid Selectors -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Challenge 1 -->
+                <button onclick="loadChallenge(1)" id="ch-btn-1" class="ch-select-btn p-4 rounded-2xl bg-slate-800 hover:bg-slate-700 border-2 border-amber-500 text-left transition flex flex-col justify-between space-y-3 shadow-lg">
+                    <div class="flex items-center justify-between w-full">
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">關卡 1</span>
+                        <i class="fa-solid fa-lightbulb text-amber-400"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-white text-sm">側面雙接點陷阱</h3>
+                        <p class="text-slate-400 text-xs mt-1">兩根線都接到燈泡側面螺紋，底部懸空。</p>
+                    </div>
+                </button>
+
+                <!-- Challenge 2 -->
+                <button onclick="loadChallenge(2)" id="ch-btn-2" class="ch-select-btn p-4 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-left transition flex flex-col justify-between space-y-3 shadow-lg">
+                    <div class="flex items-center justify-between w-full">
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30">關卡 2</span>
+                        <i class="fa-solid fa-battery-half text-sky-400"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-white text-sm">反向對衝閉合圈</h3>
+                        <p class="text-slate-400 text-xs mt-1">兩電池正極對正極緊挨，形狀成閉合圈。</p>
+                    </div>
+                </button>
+
+                <!-- Challenge 3 -->
+                <button onclick="loadChallenge(3)" id="ch-btn-3" class="ch-select-btn p-4 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-left transition flex flex-col justify-between space-y-3 shadow-lg">
+                    <div class="flex items-center justify-between w-full">
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">關卡 3</span>
+                        <i class="fa-solid fa-bolt text-rose-400"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-white text-sm">旁路短路陷阱</h3>
+                        <p class="text-slate-400 text-xs mt-1">電池正負極用裸銅線直連，燈泡被旁路。</p>
+                    </div>
+                </button>
+
+                <!-- Challenge 4 -->
+                <button onclick="loadChallenge(4)" id="ch-btn-4" class="ch-select-btn p-4 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-left transition flex flex-col justify-between space-y-3 shadow-lg">
+                    <div class="flex items-center justify-between w-full">
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">關卡 4</span>
+                        <i class="fa-solid fa-shield-halved text-purple-400"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-white text-sm">隱形絕緣皮偽閉合</h3>
+                        <p class="text-slate-400 text-xs mt-1">未剝皮的橡膠線直接貼在金屬接觸點上。</p>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Active Challenge Viewer & Tester -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Left: Interactive Challenge Canvas Sandbox -->
+                <div class="lg:col-span-2 bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-2xl flex flex-col space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 id="ch-title" class="font-bold text-lg text-white">挑戰一：側面雙接點陷阱</h3>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs text-slate-400">你的預測：</span>
+                            <button onclick="voteChallenge(true)" id="vote-yes-btn" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition">
+                                💡 會發光
+                            </button>
+                            <button onclick="voteChallenge(false)" id="vote-no-btn" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-xs font-bold transition">
+                                🚫 不會亮
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Canvas Box -->
+                    <div class="relative bg-slate-950 rounded-xl border border-slate-800 overflow-hidden h-[360px]">
+                        <canvas id="challenge-canvas" width="700" height="360" class="w-full h-full block"></canvas>
+                    </div>
+                </div>
+
+                <!-- Right: Detailed Scientific Analysis & Questioning -->
+                <div class="lg:col-span-1 bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-2xl flex flex-col justify-between space-y-4">
+                    <div class="space-y-4">
+                        <div class="flex items-center space-x-2 text-amber-400 font-bold text-sm">
+                            <i class="fa-solid fa-circle-question"></i>
+                            <span>題目觀察與思考：</span>
+                        </div>
+                        <p id="ch-question" class="text-xs text-slate-200 leading-relaxed bg-slate-900/80 p-3 rounded-xl border border-slate-700">
+                            從外觀上看，電池的正負極都已經用導線接到了小燈泡上，連成了一個看似完整的圈，小燈泡會發光嗎？
+                        </p>
+
+                        <div class="border-t border-slate-700 pt-3 space-y-2">
+                            <div class="text-xs font-bold text-slate-400">學生常見直覺誤區：</div>
+                            <div id="ch-misconception" class="text-xs text-rose-300/90 bg-rose-950/30 p-2.5 rounded-lg border border-rose-900/40">
+                                誤以為只要電池正負極都有導線連到燈泡上，算是圍成一個圈就會亮。
+                            </div>
+                        </div>
+
+                        <div class="border-t border-slate-700 pt-3 space-y-2">
+                            <div class="text-xs font-bold text-slate-400">科學原理拆解：</div>
+                            <div id="ch-explanation" class="text-xs text-emerald-300/90 bg-emerald-950/30 p-3 rounded-xl border border-emerald-900/40 leading-relaxed">
+                                小燈泡內部有兩根支架連接燈絲，一根連到側面螺紋，另一根連到底部點。兩根導線都接到螺紋，電流根本沒有通過內部的燈絲！
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="ch-result-badge" class="p-3 rounded-xl text-xs font-bold text-center bg-slate-900 text-slate-400 border border-slate-700">
+                        請先點擊上方按鈕預測：「會發光」或「不會亮」
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-950 border-t border-slate-800 py-4 mt-8 text-center text-xs text-slate-500">
+        <p>《閉合電路與電子流動探究實驗室》 &copy; 2026 初中科學教學互動媒體 | 專為探索閉合電路本質設計</p>
+    </footer>
+
+    <script>
+        // ==========================================
+        // Global State & Navigation
+        // ==========================================
+        let activeTab = 'principles';
+
+        function switchTab(tabName) {
+            activeTab = tabName;
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-sky-600', 'text-white', 'shadow');
+                btn.classList.add('text-slate-300');
+            });
+
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`nav-${tabName}`);
+            activeBtn.classList.add('bg-sky-600', 'text-white', 'shadow');
+            activeBtn.classList.remove('text-slate-300');
+
+            if (tabName === 'sandbox') {
+                resizeSandboxCanvas();
+                requestAnimationFrame(sandboxLoop);
+            } else if (tabName === 'challenges') {
+                resizeChallengeCanvas();
+                requestAnimationFrame(challengeLoop);
+            }
+        }
+
+        // ==========================================
+        // TAB 1: Microscopic Electron Simulation
+        // ==========================================
+        const microCanvas = document.getElementById('micro-canvas');
+        const microCtx = microCanvas.getContext('2d');
+        let microIsClosed = false;
+        let microElectrons = [];
+
+        // Initialize 35 free electrons
+        for (let i = 0; i < 35; i++) {
+            microElectrons.push({
+                x: Math.random() * 780 + 10,
+                y: Math.random() * 160 + 30,
+                vx: (Math.random() - 0.5) * 1.5,
+                vy: (Math.random() - 0.5) * 1.5
+            });
+        }
+
+        function setMicroState(isClosed) {
+            microIsClosed = isClosed;
+            const openBtn = document.getElementById('micro-open-btn');
+            const closedBtn = document.getElementById('micro-closed-btn');
+            const statusTag = document.getElementById('micro-status-tag');
+
+            if (isClosed) {
+                openBtn.className = "px-4 py-2 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white";
+                closedBtn.className = "px-4 py-2 rounded-lg text-xs font-bold transition bg-emerald-600 text-white shadow";
+                statusTag.innerHTML = `<span class="text-emerald-400 font-bold">⚡ 定向電場建立：</span> 電子受負極排斥、正極吸引，形成全線單向流動！驅動燈泡發光。`;
+            } else {
+                openBtn.className = "px-4 py-2 rounded-lg text-xs font-bold transition bg-rose-600 text-white shadow";
+                closedBtn.className = "px-4 py-2 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white";
+                statusTag.innerHTML = `🚫 <span class="text-rose-400 font-bold">無淨電流：</span> 電子缺乏持續定向推力，做雜亂熱運動。`;
+            }
+        }
+
+        function renderMicroscopic() {
+            if (!microCtx) return;
+            const w = microCanvas.width;
+            const h = microCanvas.height;
+
+            microCtx.clearRect(0, 0, w, h);
+
+            // Wire Pipe
+            microCtx.fillStyle = '#1e293b';
+            microCtx.fillRect(0, 20, w, h - 40);
+            microCtx.strokeStyle = '#475569';
+            microCtx.lineWidth = 4;
+            microCtx.strokeRect(0, 20, w, h - 40);
+
+            // Copper Ion Lattice Cu2+
+            for (let x = 40; x < w; x += 60) {
+                for (let y = 45; y < h - 25; y += 45) {
+                    microCtx.beginPath();
+                    microCtx.arc(x, y, 10, 0, Math.PI * 2);
+                    microCtx.fillStyle = '#b45309';
+                    microCtx.fill();
+                    microCtx.fillStyle = '#fef08a';
+                    microCtx.font = '10px sans-serif';
+                    microCtx.textAlign = 'center';
+                    microCtx.fillText('Cu²⁺', x, y + 3);
+                }
+            }
+
+            // Electron Particles 😊
+            microElectrons.forEach(e => {
+                if (microIsClosed) {
+                    e.x += 2.8;
+                    e.y += (Math.random() - 0.5) * 0.4;
+                    if (e.x > w) e.x = 0;
+                } else {
+                    e.x += e.vx;
+                    e.y += e.vy;
+                    if (e.x < 15 || e.x > w - 15) e.vx *= -1;
+                    if (e.y < 30 || e.y > h - 30) e.vy *= -1;
+                }
+
+                microCtx.beginPath();
+                microCtx.arc(e.x, e.y, 8, 0, Math.PI * 2);
+                microCtx.fillStyle = '#facc15';
+                microCtx.fill();
+                microCtx.strokeStyle = '#854d0e';
+                microCtx.lineWidth = 1;
+                microCtx.stroke();
+
+                // Eyes & Smile
+                microCtx.fillStyle = '#000';
+                microCtx.beginPath();
+                microCtx.arc(e.x - 3, e.y - 2, 1, 0, Math.PI * 2);
+                microCtx.arc(e.x + 3, e.y - 2, 1, 0, Math.PI * 2);
+                microCtx.fill();
+                microCtx.beginPath();
+                microCtx.arc(e.x, e.y + 1, 3.5, 0.1 * Math.PI, 0.9 * Math.PI);
+                microCtx.strokeStyle = '#000';
+                microCtx.lineWidth = 1;
+                microCtx.stroke();
+            });
+
+            requestAnimationFrame(renderMicroscopic);
+        }
+        requestAnimationFrame(renderMicroscopic);
+
+        // ==========================================
+        // TAB 2: Sandbox Simulator Engine
+        // ==========================================
+        const sbCanvas = document.getElementById('sandbox-canvas');
+        const sbCtx = sbCanvas.getContext('2d');
+
+        let isEasyMode = true; // Easy Connect magnetic guide vs Precision
+        let isSymbolMode = false;
+        let activeWireTool = 'copper'; // 'copper' or 'insulated'
+        let sandboxComponents = [];
+        let sandboxWires = [];
+        let selectedComponent = null;
+        let wireStartTerminal = null;
+        let hoveredTerminal = null; // For magnetic highlight
+        let dragOffset = { x: 0, y: 0 };
+        let mousePos = { x: 0, y: 0 };
+
+        function toggleEasyMode() {
+            isEasyMode = !isEasyMode;
+            const btnText = document.getElementById('easy-mode-text');
+            if (isEasyMode) {
+                btnText.innerText = "模式：簡易磁吸導引 (推薦初學者)";
+            } else {
+                btnText.innerText = "模式：精細雙接點模式 (高度仿真)";
+            }
+            solveSandboxPhysics();
+        }
+
+        function setWireTool(type) {
+            activeWireTool = type;
+            const copBtn = document.getElementById('tool-wire-copper');
+            const insBtn = document.getElementById('tool-wire-insulated');
+            if (type === 'copper') {
+                copBtn.className = "p-2.5 bg-amber-500/20 border-2 border-amber-500 rounded-xl text-xs font-bold text-amber-300 flex flex-col items-center justify-center gap-1 shadow";
+                insBtn.className = "p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs font-bold text-slate-400 hover:text-slate-200 flex flex-col items-center justify-center gap-1";
+            } else {
+                insBtn.className = "p-2.5 bg-rose-500/20 border-2 border-rose-500 rounded-xl text-xs font-bold text-rose-300 flex flex-col items-center justify-center gap-1 shadow";
+                copBtn.className = "p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs font-bold text-slate-400 hover:text-slate-200 flex flex-col items-center justify-center gap-1";
+            }
+        }
+
+        function toggleSymbolMode() {
+            isSymbolMode = !isSymbolMode;
+            document.getElementById('symbol-mode-text').innerText = isSymbolMode ? "切換為：實物模型" : "切換為：電路符號";
+        }
+
+        let nextCompId = 1;
+        function addComponent(type, x = 380, y = 200) {
+            const comp = {
+                id: nextCompId++,
+                type: type,
+                x: x,
+                y: y,
+                closed: true, // switch
+                terminals: []
+            };
+
+            if (type === 'battery') {
+                comp.terminals = [
+                    { id: `${comp.id}-neg`, name: '負極 (–)', relX: -55, relY: 0, color: '#f43f5e' },
+                    { id: `${comp.id}-pos`, name: '正極 (+)', relX: 55, relY: 0, color: '#facc15' }
+                ];
+            } else if (type === 'bulb') {
+                // EXPLICIT ENLARGED VISUAL TERMINALS
+                comp.terminals = [
+                    { id: `${comp.id}-screw`, name: '接點 1 (側面螺紋)', relX: -32, relY: 10, color: '#38bdf8' },
+                    { id: `${comp.id}-base`, name: '接點 2 (底部觸點)', relX: 0, relY: 48, color: '#34d399' }
+                ];
+            } else if (type === 'switch') {
+                comp.terminals = [
+                    { id: `${comp.id}-in`, name: '接點 A', relX: -45, relY: 0, color: '#38bdf8' },
+                    { id: `${comp.id}-out`, name: '接點 B', relX: 45, relY: 0, color: '#38bdf8' }
+                ];
+            }
+
+            sandboxComponents.push(comp);
+            solveSandboxPhysics();
+        }
+
+        function clearSandbox() {
+            sandboxComponents = [];
+            sandboxWires = [];
+            wireStartTerminal = null;
+            solveSandboxPhysics();
+        }
+
+        function loadSampleCircuit() {
+            clearSandbox();
+            // Battery, Bulb, Switch
+            addComponent('battery', 240, 320);
+            addComponent('bulb', 560, 180);
+            addComponent('switch', 240, 120);
+
+            const b = sandboxComponents[0];
+            const l = sandboxComponents[1];
+            const s = sandboxComponents[2];
+
+            // Wires
+            sandboxWires.push({ from: b.terminals[0].id, to: s.terminals[0].id, type: 'copper' });
+            sandboxWires.push({ from: s.terminals[1].id, to: l.terminals[0].id, type: 'copper' });
+            sandboxWires.push({ from: l.terminals[1].id, to: b.terminals[1].id, type: 'copper' });
+
+            solveSandboxPhysics();
+        }
+
+        // Circuit Physics Engine
+        let sandboxState = {
+            isClosed: false,
+            voltage: 0,
+            hasBulbFilament: false,
+            isShortCircuit: false,
+            insulatedBreak: false,
+            message: "請拉取導線連接組件"
+        };
+
+        function solveSandboxPhysics() {
+            if (sandboxComponents.length === 0) {
+                sandboxState = { isClosed: false, voltage: 0, hasBulbFilament: false, isShortCircuit: false, insulatedBreak: false, message: "畫布為空，請新增電池與燈泡進行探究" };
+                updateDiagnosticUI();
+                return;
+            }
+
+            const batteries = sandboxComponents.filter(c => c.type === 'battery');
+            const bulbs = sandboxComponents.filter(c => c.type === 'bulb');
+
+            if (batteries.length === 0) {
+                sandboxState = { isClosed: false, voltage: 0, hasBulbFilament: false, isShortCircuit: false, insulatedBreak: false, message: "缺乏電源：請加入電池以提供推動電荷的電壓" };
+                updateDiagnosticUI();
+                return;
+            }
+
+            // Build Adjacency List
+            let graph = {};
+            function addEdge(u, v, isWireInsulated) {
+                if (!graph[u]) graph[u] = [];
+                if (!graph[v]) graph[v] = [];
+                graph[u].push({ node: v, insulated: isWireInsulated });
+                graph[v].push({ node: u, insulated: isWireInsulated });
+            }
+
+            sandboxComponents.forEach(c => {
+                if (c.type === 'switch' && c.closed) {
+                    addEdge(c.terminals[0].id, c.terminals[1].id, false);
+                }
+            });
+
+            let wireHasInsulated = false;
+            sandboxWires.forEach(w => {
+                addEdge(w.from, w.to, w.type === 'insulated');
+                if (w.type === 'insulated') wireHasInsulated = true;
+            });
+
+            const batNeg = batteries[0].terminals[0].id;
+            const batPos = batteries[0].terminals[1].id;
+
+            // BFS Path Find
+            let visited = new Set();
+            let queue = [[batNeg]];
+            let foundPaths = [];
+
+            while (queue.length > 0) {
+                let path = queue.shift();
+                let curr = path[path.length - 1];
+
+                if (curr === batPos && path.length > 1) {
+                    foundPaths.push(path);
+                    continue;
+                }
+
+                if (!visited.has(curr)) {
+                    visited.add(curr);
+                    const neighbors = graph[curr] || [];
+                    neighbors.forEach(edge => {
+                        if (!edge.insulated) {
+                            queue.push([...path, edge.node]);
+                        }
+                    });
+                }
+            }
+
+            if (foundPaths.length === 0) {
+                sandboxState = {
+                    isClosed: false,
+                    voltage: 0,
+                    hasBulbFilament: false,
+                    isShortCircuit: false,
+                    insulatedBreak: wireHasInsulated,
+                    message: wireHasInsulated ? "🚫 斷路：導線使用了橡皮絕緣外皮，電荷無法穿透傳導" : "🚫 斷路：線路未完全相連或開關處於斷開狀態"
+                };
+            } else {
+                let validBulbLight = false;
+                let shortCircuit = false;
+
+                foundPaths.forEach(path => {
+                    bulbs.forEach(b => {
+                        const screwId = b.terminals[0].id;
+                        const baseId = b.terminals[1].id;
+
+                        if (isEasyMode) {
+                            // Easy mode: if path touches both terminals or touches bulb, it counts
+                            if (path.includes(screwId) && path.includes(baseId)) {
+                                validBulbLight = true;
+                            }
+                        } else {
+                            // Precision mode: requires screw and base
+                            if (path.includes(screwId) && path.includes(baseId)) {
+                                validBulbLight = true;
+                            }
+                        }
+                    });
+
+                    let bulbInPath = bulbs.some(b => path.includes(b.terminals[0].id) && path.includes(b.terminals[1].id));
+                    if (!bulbInPath) {
+                        shortCircuit = true;
+                    }
+                });
+
+                if (shortCircuit) {
+                    sandboxState = {
+                        isClosed: true,
+                        voltage: 1.5 * batteries.length,
+                        hasBulbFilament: false,
+                        isShortCircuit: true,
+                        insulatedBreak: false,
+                        message: "⚠️ 嚴重的旁路短路！無用電器阻擋，過量電流將導致電池發熱過載！"
+                    };
+                } else if (validBulbLight) {
+                    sandboxState = {
+                        isClosed: true,
+                        voltage: 1.5 * batteries.length,
+                        hasBulbFilament: true,
+                        isShortCircuit: false,
+                        insulatedBreak: false,
+                        message: "🟢 通路！閉合迴路成功貫穿燈絲，自由電子順暢單向流動，燈泡發光！"
+                    };
+                } else {
+                    sandboxState = {
+                        isClosed: true,
+                        voltage: 1.5,
+                        hasBulbFilament: false,
+                        isShortCircuit: false,
+                        insulatedBreak: false,
+                        message: "❌ 無效接法：電流未同時貫穿燈泡的「側面螺紋」與「底部觸點」。"
+                    };
+                }
+            }
+
+            updateDiagnosticUI();
+        }
+
+        function updateDiagnosticUI() {
+            document.getElementById('diag-loop').innerText = sandboxState.isClosed ? "🟢 閉合迴路 (Closed)" : "🔴 斷路 (Open Loop)";
+            document.getElementById('diag-voltage').innerText = `${sandboxState.voltage.toFixed(1)} V`;
+            document.getElementById('diag-filament').innerText = sandboxState.hasBulbFilament ? "⚡ 貫穿燈絲" : "❌ 未通過燈絲";
+            document.getElementById('diag-short').innerText = sandboxState.isShortCircuit ? "⚠️ 短路過載！" : "安全 (無短路)";
+            document.getElementById('diag-short').className = sandboxState.isShortCircuit ? "font-bold text-rose-500 animate-pulse" : "font-bold text-emerald-400";
+            document.getElementById('diag-detail-box').innerText = sandboxState.message;
+
+            const badge = document.getElementById('sandbox-status-badge');
+            const badgeText = document.getElementById('sandbox-status-text');
+            badgeText.innerText = sandboxState.message;
+
+            if (sandboxState.isShortCircuit) {
+                badge.className = "absolute top-4 left-4 px-4 py-2.5 rounded-xl text-xs font-bold shadow-2xl backdrop-blur flex items-center space-x-2 bg-rose-900/90 text-rose-200 border border-rose-500 short-circuit-alert";
+            } else if (sandboxState.hasBulbFilament) {
+                badge.className = "absolute top-4 left-4 px-4 py-2.5 rounded-xl text-xs font-bold shadow-2xl backdrop-blur flex items-center space-x-2 bg-emerald-900/90 text-emerald-200 border border-emerald-500 bulb-glow";
+            } else {
+                badge.className = "absolute top-4 left-4 px-4 py-2.5 rounded-xl text-xs font-bold shadow-2xl backdrop-blur flex items-center space-x-2 bg-slate-900/90 text-slate-300 border border-slate-700";
+            }
+        }
+
+        let animTime = 0;
+
+        function sandboxLoop() {
+            if (activeTab !== 'sandbox') return;
+            animTime += 0.04;
+
+            sbCtx.clearRect(0, 0, sbCanvas.width, sbCanvas.height);
+
+            // Canvas Grid Background
+            sbCtx.strokeStyle = '#1e293b';
+            sbCtx.lineWidth = 1;
+            for (let x = 0; x < sbCanvas.width; x += 30) {
+                sbCtx.beginPath(); sbCtx.moveTo(x, 0); sbCtx.lineTo(x, sbCanvas.height); sbCtx.stroke();
+            }
+            for (let y = 0; y < sbCanvas.height; y += 30) {
+                sbCtx.beginPath(); sbCtx.moveTo(0, y); sbCtx.lineTo(sbCanvas.width, y); sbCtx.stroke();
+            }
+
+            // Draw Wires
+            sandboxWires.forEach(w => {
+                const t1 = getTerminalWorldPos(w.from);
+                const t2 = getTerminalWorldPos(w.to);
+                if (!t1 || !t2) return;
+
+                sbCtx.beginPath();
+                sbCtx.moveTo(t1.x, t1.y);
+                const midX = (t1.x + t2.x) / 2;
+                const midY = (t1.y + t2.y) / 2 + 18;
+                sbCtx.quadraticCurveTo(midX, midY, t2.x, t2.y);
+
+                if (w.type === 'insulated') {
+                    sbCtx.strokeStyle = '#ef4444';
+                    sbCtx.lineWidth = 7;
+                    sbCtx.stroke();
+                } else {
+                    sbCtx.strokeStyle = '#b45309';
+                    sbCtx.lineWidth = 5;
+                    sbCtx.stroke();
+                    sbCtx.strokeStyle = '#f59e0b';
+                    sbCtx.lineWidth = 2;
+                    sbCtx.stroke();
+                }
+
+                // Electron Particles 😊 on Wires
+                if ((sandboxState.hasBulbFilament || sandboxState.isShortCircuit) && w.type === 'copper') {
+                    const steps = 6;
+                    for (let i = 0; i < steps; i++) {
+                        let progress = (animTime * 0.9 + (i / steps)) % 1;
+                        let ex = (1 - progress) * (1 - progress) * t1.x + 2 * (1 - progress) * progress * midX + progress * progress * t2.x;
+                        let ey = (1 - progress) * (1 - progress) * t1.y + 2 * (1 - progress) * progress * midY + progress * progress * t2.y;
+
+                        sbCtx.beginPath();
+                        sbCtx.arc(ex, ey, 6, 0, Math.PI * 2);
+                        sbCtx.fillStyle = '#facc15';
+                        sbCtx.fill();
+                        sbCtx.strokeStyle = '#000';
+                        sbCtx.lineWidth = 0.8;
+                        sbCtx.stroke();
+                    }
+                }
+            });
+
+            // Draw Wire Currently Being Dragged (With Magnetic Snap preview)
+            if (wireStartTerminal) {
+                const t1 = getTerminalWorldPos(wireStartTerminal.id);
+                if (t1) {
+                    let targetX = mousePos.x;
+                    let targetY = mousePos.y;
+
+                    // Magnetic Snap check (Radius: 30px)
+                    hoveredTerminal = null;
+                    for (let c of sandboxComponents) {
+                        for (let t of c.terminals) {
+                            if (t.id !== wireStartTerminal.id) {
+                                const tp = getTerminalWorldPos(t.id);
+                                if (Math.hypot(tp.x - mousePos.x, tp.y - mousePos.y) < 32) {
+                                    targetX = tp.x;
+                                    targetY = tp.y;
+                                    hoveredTerminal = t;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    sbCtx.beginPath();
+                    sbCtx.moveTo(t1.x, t1.y);
+                    sbCtx.lineTo(targetX, targetY);
+                    sbCtx.strokeStyle = activeWireTool === 'copper' ? '#f59e0b' : '#ef4444';
+                    sbCtx.lineWidth = 3;
+                    sbCtx.setLineDash([5, 5]);
+                    sbCtx.stroke();
+                    sbCtx.setLineDash([]);
+
+                    // Draw Magnetic Snap Aura
+                    if (hoveredTerminal) {
+                        const hp = getTerminalWorldPos(hoveredTerminal.id);
+                        sbCtx.beginPath();
+                        sbCtx.arc(hp.x, hp.y, 16, 0, Math.PI * 2);
+                        sbCtx.fillStyle = 'rgba(56, 189, 248, 0.35)';
+                        sbCtx.fill();
+                        sbCtx.strokeStyle = '#38bdf8';
+                        sbCtx.lineWidth = 2;
+                        sbCtx.stroke();
+                    }
+                }
+            }
+
+            // Draw Components
+            sandboxComponents.forEach(c => {
+                sbCtx.save();
+                sbCtx.translate(c.x, c.y);
+
+                if (c.type === 'battery') {
+                    if (isSymbolMode) {
+                        sbCtx.strokeStyle = '#38bdf8'; sbCtx.lineWidth = 3;
+                        sbCtx.beginPath(); sbCtx.moveTo(-30, 0); sbCtx.lineTo(-10, 0); sbCtx.stroke();
+                        sbCtx.beginPath(); sbCtx.moveTo(10, 0); sbCtx.lineTo(30, 0); sbCtx.stroke();
+                        sbCtx.beginPath(); sbCtx.moveTo(-10, -25); sbCtx.lineTo(-10, 25); sbCtx.stroke();
+                        sbCtx.lineWidth = 6;
+                        sbCtx.beginPath(); sbCtx.moveTo(10, -12); sbCtx.lineTo(10, 12); sbCtx.stroke();
+                    } else {
+                        // Battery Body
+                        sbCtx.fillStyle = '#334155';
+                        sbCtx.fillRect(-50, -22, 100, 44);
+                        sbCtx.fillStyle = '#cbd5e1';
+                        sbCtx.fillRect(50, -8, 8, 16);
+                        sbCtx.fillStyle = '#f1f5f9';
+                        sbCtx.font = 'bold 13px sans-serif';
+                        sbCtx.fillText('–', -42, 5);
+                        sbCtx.fillText('+', 35, 5);
+                        sbCtx.fillStyle = '#facc15';
+                        sbCtx.font = 'bold 11px sans-serif';
+                        sbCtx.fillText('1.5V 直流電池', -22, 4);
+                    }
+                } else if (c.type === 'bulb') {
+                    if (sandboxState.hasBulbFilament) {
+                        // Light Bulb Glow Radial Gradient
+                        const glow = sbCtx.createRadialGradient(0, -20, 5, 0, -20, 65);
+                        glow.addColorStop(0, 'rgba(250, 204, 21, 0.95)');
+                        glow.addColorStop(1, 'rgba(250, 204, 21, 0)');
+                        sbCtx.fillStyle = glow;
+                        sbCtx.beginPath();
+                        sbCtx.arc(0, -20, 65, 0, Math.PI * 2);
+                        sbCtx.fill();
+                    }
+
+                    if (isSymbolMode) {
+                        sbCtx.beginPath(); sbCtx.arc(0, 0, 25, 0, Math.PI * 2);
+                        sbCtx.strokeStyle = '#facc15'; sbCtx.lineWidth = 3; sbCtx.stroke();
+                        sbCtx.beginPath(); sbCtx.moveTo(-17, -17); sbCtx.lineTo(17, 17); sbCtx.stroke();
+                        sbCtx.beginPath(); sbCtx.moveTo(17, -17); sbCtx.lineTo(-17, 17); sbCtx.stroke();
+                    } else {
+                        // Realistic Glass Dome
+                        sbCtx.beginPath();
+                        sbCtx.arc(0, -25, 26, 0, Math.PI * 2);
+                        sbCtx.fillStyle = sandboxState.hasBulbFilament ? 'rgba(254, 240, 138, 0.95)' : 'rgba(148, 163, 184, 0.25)';
+                        sbCtx.fill();
+                        sbCtx.strokeStyle = '#cbd5e1';
+                        sbCtx.lineWidth = 2;
+                        sbCtx.stroke();
+
+                        // Inner Filament
+                        sbCtx.beginPath();
+                        sbCtx.moveTo(-10, -10); sbCtx.lineTo(-5, -32); sbCtx.lineTo(5, -32); sbCtx.lineTo(10, -10);
+                        sbCtx.strokeStyle = sandboxState.hasBulbFilament ? '#f97316' : '#64748b';
+                        sbCtx.lineWidth = 2.5;
+                        sbCtx.stroke();
+
+                        // Metal Screw Thread Base (Side Terminal 1)
+                        sbCtx.fillStyle = '#94a3b8';
+                        sbCtx.fillRect(-20, 0, 40, 28);
+                        sbCtx.strokeStyle = '#475569';
+                        sbCtx.strokeRect(-20, 0, 40, 28);
+
+                        // Black Insulator Ring
+                        sbCtx.fillStyle = '#0f172a';
+                        sbCtx.fillRect(-15, 28, 30, 8);
+
+                        // Bottom Metal Contact Point (Terminal 2)
+                        sbCtx.fillStyle = '#e2e8f0';
+                        sbCtx.beginPath();
+                        sbCtx.arc(0, 42, 8, 0, Math.PI * 2);
+                        sbCtx.fill();
+                        sbCtx.strokeStyle = '#64748b';
+                        sbCtx.stroke();
+                    }
+                } else if (c.type === 'switch') {
+                    sbCtx.fillStyle = '#475569';
+                    sbCtx.fillRect(-45, -8, 90, 16);
+
+                    sbCtx.beginPath();
+                    sbCtx.moveTo(-35, 0);
+                    if (c.closed) {
+                        sbCtx.lineTo(35, 0);
+                    } else {
+                        sbCtx.lineTo(20, -30);
+                    }
+                    sbCtx.strokeStyle = '#38bdf8';
+                    sbCtx.lineWidth = 4;
+                    sbCtx.stroke();
+                }
+
+                sbCtx.restore();
+
+                // Draw Terminal Contact Rings & Labels
+                c.terminals.forEach(t => {
+                    const pos = getTerminalWorldPos(t.id);
+
+                    // Outer Magnetic Aura
+                    sbCtx.beginPath();
+                    sbCtx.arc(pos.x, pos.y, 9, 0, Math.PI * 2);
+                    sbCtx.fillStyle = t.color || '#facc15';
+                    sbCtx.fill();
+                    sbCtx.strokeStyle = '#000';
+                    sbCtx.lineWidth = 2;
+                    sbCtx.stroke();
+
+                    // Terminal Label Tag
+                    sbCtx.fillStyle = '#f8fafc';
+                    sbCtx.font = 'bold 10px sans-serif';
+                    sbCtx.fillText(t.name, pos.x - 18, pos.y - 12);
+                });
+            });
+
+            requestAnimationFrame(sandboxLoop);
+        }
+
+        function getTerminalWorldPos(termId) {
+            for (let c of sandboxComponents) {
+                for (let t of c.terminals) {
+                    if (t.id === termId) {
+                        return { x: c.x + t.relX, y: c.y + t.relY };
+                    }
+                }
+            }
+            return null;
+        }
+
+        function getCanvasMousePos(e) {
+            const rect = sbCanvas.getBoundingClientRect();
+            const scaleX = sbCanvas.width / rect.width;
+            const scaleY = sbCanvas.height / rect.height;
+            return {
+                x: ((e.clientX || (e.touches && e.touches[0].clientX)) - rect.left) * scaleX,
+                y: ((e.clientY || (e.touches && e.touches[0].clientY)) - rect.top) * scaleY
+            };
+        }
+
+        sbCanvas.addEventListener('mousedown', handlePointerDown);
+        sbCanvas.addEventListener('mousemove', handlePointerMove);
+        sbCanvas.addEventListener('mouseup', handlePointerUp);
+        sbCanvas.addEventListener('touchstart', handlePointerDown);
+        sbCanvas.addEventListener('touchmove', handlePointerMove);
+        sbCanvas.addEventListener('touchend', handlePointerUp);
+
+        function handlePointerDown(e) {
+            const pos = getCanvasMousePos(e);
+            mousePos = pos;
+
+            // Terminal Click Check
+            for (let c of sandboxComponents) {
+                for (let t of c.terminals) {
+                    const tp = getTerminalWorldPos(t.id);
+                    if (Math.hypot(tp.x - pos.x, tp.y - pos.y) < 16) {
+                        wireStartTerminal = t;
+                        return;
+                    }
+                }
+            }
+
+            // Component Drag Check
+            for (let c of sandboxComponents) {
+                if (Math.abs(c.x - pos.x) < 45 && Math.abs(c.y - pos.y) < 45) {
+                    if (c.type === 'switch' && Math.hypot(c.x - pos.x, c.y - pos.y) < 22) {
+                        c.closed = !c.closed;
+                        solveSandboxPhysics();
+                        return;
+                    }
+                    selectedComponent = c;
+                    dragOffset = { x: pos.x - c.x, y: pos.y - c.y };
+                    return;
+                }
+            }
+        }
+
+        function handlePointerMove(e) {
+            const pos = getCanvasMousePos(e);
+            mousePos = pos;
+            if (selectedComponent) {
+                selectedComponent.x = pos.x - dragOffset.x;
+                selectedComponent.y = pos.y - dragOffset.y;
+                solveSandboxPhysics();
+            }
+        }
+
+        function handlePointerUp(e) {
+            if (wireStartTerminal) {
+                const pos = mousePos;
+                // Magnetic snap destination search
+                for (let c of sandboxComponents) {
+                    for (let t of c.terminals) {
+                        if (t.id !== wireStartTerminal.id) {
+                            const tp = getTerminalWorldPos(t.id);
+                            if (Math.hypot(tp.x - pos.x, tp.y - pos.y) < 32) { // 32px Magnetic Radius
+                                sandboxWires.push({
+                                    from: wireStartTerminal.id,
+                                    to: t.id,
+                                    type: activeWireTool
+                                });
+                                solveSandboxPhysics();
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            selectedComponent = null;
+            wireStartTerminal = null;
+            hoveredTerminal = null;
+        }
+
+        function resizeSandboxCanvas() {
+            const container = document.getElementById('canvas-container');
+            if (container) {
+                sbCanvas.width = container.clientWidth;
+                sbCanvas.height = container.clientHeight;
+            }
+        }
+        window.addEventListener('resize', resizeSandboxCanvas);
+
+        // ==========================================
+        // TAB 3: Challenge Levels Engine
+        // ==========================================
+        const chCanvas = document.getElementById('challenge-canvas');
+        const chCtx = chCanvas.getContext('2d');
+        let currentChallengeId = 1;
+        let isChTesting = false;
+        let userPrediction = null;
+
+        const challengesData = {
+            1: {
+                title: "挑戰一：側面雙接點陷阱",
+                question: "如圖所示，電池導線兩端都連接到了燈泡的「側面螺紋」上，底部金屬點懸空。小燈泡會亮嗎？",
+                misconception: "學生直覺：以為只要電池正負極都有導線接到燈泡上，就構成了完整迴路。",
+                explanation: "科學原理：小燈泡內部燈絲一端接側面螺紋、另一端接地底點。兩根線都接到螺紋，電流沒有經過燈絲，屬於無效迴路！",
+                setup: function() {
+                    return {
+                        components: [
+                            { type: 'battery', x: 200, y: 180 },
+                            { type: 'bulb', x: 500, y: 180 }
+                        ],
+                        wires: [
+                            { fromX: 145, fromY: 180, toX: 468, toY: 190, type: 'copper' },
+                            { fromX: 255, fromY: 180, toX: 468, toY: 190, type: 'copper' }
+                        ],
+                        willLight: false,
+                        resultMsg: "❌ 驗證結果：燈泡不亮！電流沒有經過燈泡內部的鎢絲。"
+                    };
+                }
+            },
+            2: {
+                title: "挑戰二：反向對衝閉合圈",
+                question: "兩節相同的 1.5V 電池正極對正極 ( + 對 + ) 接在一起，並與燈泡連成封閉圖形。小燈泡會亮嗎？",
+                misconception: "學生直覺：認為只要導線與元件在形狀上頭尾相連「繞成一個圈」，就一定有電流。",
+                explanation: "科學原理：閉合電路需要驅動電荷的淨電位差（電壓）。兩電池正極對衝，推動力相互抵消，總電壓為 0V，無法推動電子。",
+                setup: function() {
+                    return {
+                        components: [
+                            { type: 'battery', x: 190, y: 220, label: '電池 1' },
+                            { type: 'battery', x: 320, y: 220, label: '電池 2 (反向)' },
+                            { type: 'bulb', x: 540, y: 160 }
+                        ],
+                        wires: [
+                            { fromX: 135, fromY: 220, toX: 540, toY: 208, type: 'copper' },
+                            { fromX: 375, fromY: 220, toX: 508, toY: 170, type: 'copper' }
+                        ],
+                        willLight: false,
+                        resultMsg: "❌ 驗證結果：燈泡不亮！對衝電池總電壓抵消為 0V，缺乏電荷驅動力。"
+                    };
+                }
+            },
+            3: {
+                title: "挑戰三：旁路短路陷阱",
+                question: "燈泡正常連接，但在電池正負極之間又直連了一根無阻力的金屬裸線。燈泡會亮嗎？",
+                misconception: "學生直覺：認為燈泡所在的路徑是通的，電流會平分流過兩條路。",
+                explanation: "科學原理：電子會走阻力極小的捷徑（裸線旁路）。絕大部分電流會直接衝回負極，導致燈泡無電流流過，且電池急劇發熱（短路）！",
+                setup: function() {
+                    return {
+                        components: [
+                            { type: 'battery', x: 200, y: 180 },
+                            { type: 'bulb', x: 520, y: 180 }
+                        ],
+                        wires: [
+                            { fromX: 145, fromY: 180, toX: 520, toY: 228, type: 'copper' },
+                            { fromX: 255, fromY: 180, toX: 488, toY: 190, type: 'copper' },
+                            { fromX: 145, fromY: 180, toX: 255, toY: 180, type: 'short', arc: -65 }
+                        ],
+                        willLight: false,
+                        isShort: true,
+                        resultMsg: "⚠️ 驗證結果：短路警示！電流選擇無阻力捷徑，燈泡不亮，電池急劇發熱！"
+                    };
+                }
+            },
+            4: {
+                title: "挑戰四：隱形絕緣皮偽閉合",
+                question: "導線外表緊貼在電池與燈泡上，但導線端點的塑膠絕緣外皮未剝開。燈泡會亮嗎？",
+                misconception: "學生直覺：只關注巨觀外觀上「有沒有碰在一起」，忽略了材質的導電性質。",
+                explanation: "科學原理：閉合電體必須由「導體」貫穿全程。橡皮塑膠皮是絕緣體，阻斷了電子的流動，實質上依然是斷路。",
+                setup: function() {
+                    return {
+                        components: [
+                            { type: 'battery', x: 200, y: 180 },
+                            { type: 'bulb', x: 520, y: 180 }
+                        ],
+                        wires: [
+                            { fromX: 145, fromY: 180, toX: 520, toY: 228, type: 'insulated' },
+                            { fromX: 255, fromY: 180, toX: 488, toY: 190, type: 'insulated' }
+                        ],
+                        willLight: false,
+                        resultMsg: "❌ 驗證結果：燈泡不亮！橡膠外皮絕緣阻斷電荷傳導。"
+                    };
+                }
+            }
+        };
+
+        function loadChallenge(id) {
+            currentChallengeId = id;
+            isChTesting = false;
+            userPrediction = null;
+
+            document.querySelectorAll('.ch-select-btn').forEach(btn => {
+                btn.classList.remove('border-amber-500', 'border-2');
+                btn.classList.add('border-slate-700');
+            });
+            document.getElementById(`ch-btn-${id}`).classList.add('border-amber-500', 'border-2');
+
+            const data = challengesData[id];
+            document.getElementById('ch-title').innerText = data.title;
+            document.getElementById('ch-question').innerText = data.question;
+            document.getElementById('ch-misconception').innerText = data.misconception;
+            document.getElementById('ch-explanation').innerText = data.explanation;
+            document.getElementById('ch-result-badge').innerText = "請先點擊上方按鈕預測：「會發光」或「不會亮」";
+            document.getElementById('ch-result-badge').className = "p-3 rounded-xl text-xs font-bold text-center bg-slate-900 text-slate-400 border border-slate-700";
+
+            resizeChallengeCanvas();
+        }
+
+        function voteChallenge(prediction) {
+            userPrediction = prediction;
+            isChTesting = true;
+            const data = challengesData[currentChallengeId].setup();
+            const badge = document.getElementById('ch-result-badge');
+
+            const isCorrect = (prediction === data.willLight);
+            const prefix = isCorrect ? "🎉 恭喜你答對了！ " : "🤔 答案與你的預測不同喔！ ";
+
+            badge.innerText = prefix + data.resultMsg;
+            if (data.isShort) {
+                badge.className = "p-3 rounded-xl text-xs font-bold text-center bg-rose-900 text-rose-200 border border-rose-500 short-circuit-alert";
+            } else if (data.willLight) {
+                badge.className = "p-3 rounded-xl text-xs font-bold text-center bg-emerald-900 text-emerald-200 border border-emerald-500";
+            } else {
+                badge.className = "p-3 rounded-xl text-xs font-bold text-center bg-amber-950 text-amber-300 border border-amber-700";
+            }
+        }
+
+        function challengeLoop() {
+            if (activeTab !== 'challenges') return;
+
+            chCtx.clearRect(0, 0, chCanvas.width, chCanvas.height);
+            const data = challengesData[currentChallengeId].setup();
+
+            // Wires
+            data.wires.forEach(w => {
+                chCtx.beginPath();
+                chCtx.moveTo(w.fromX, w.fromY);
+                if (w.arc) {
+                    chCtx.quadraticCurveTo((w.fromX + w.toX) / 2, w.fromY + w.arc, w.toX, w.toY);
+                } else {
+                    chCtx.lineTo(w.toX, w.toY);
+                }
+
+                if (w.type === 'insulated') {
+                    chCtx.strokeStyle = '#ef4444';
+                    chCtx.lineWidth = 6;
+                } else if (w.type === 'short') {
+                    chCtx.strokeStyle = '#f43f5e';
+                    chCtx.lineWidth = 5;
+                } else {
+                    chCtx.strokeStyle = '#f59e0b';
+                    chCtx.lineWidth = 4;
+                }
+                chCtx.stroke();
+            });
+
+            // Components
+            data.components.forEach(c => {
+                chCtx.save();
+                chCtx.translate(c.x, c.y);
+                if (c.type === 'battery') {
+                    chCtx.fillStyle = '#334155'; chCtx.fillRect(-40, -18, 80, 36);
+                    chCtx.fillStyle = '#cbd5e1'; chCtx.fillRect(40, -6, 6, 12);
+                    chCtx.fillStyle = '#facc15'; chCtx.font = 'bold 10px sans-serif';
+                    chCtx.fillText('1.5V', -12, 4);
+                } else if (c.type === 'bulb') {
+                    chCtx.beginPath(); chCtx.arc(0, -20, 22, 0, Math.PI * 2);
+                    chCtx.fillStyle = (isChTesting && data.willLight) ? '#fef08a' : 'rgba(148, 163, 184, 0.2)';
+                    chCtx.fill(); chCtx.strokeStyle = '#cbd5e1'; chCtx.stroke();
+                    chCtx.fillStyle = '#94a3b8'; chCtx.fillRect(-15, 0, 30, 20);
+                    chCtx.fillStyle = '#e2e8f0'; chCtx.beginPath(); chCtx.arc(0, 25, 5, 0, Math.PI * 2); chCtx.fill();
+                }
+                chCtx.restore();
+            });
+
+            requestAnimationFrame(challengeLoop);
+        }
+
+        function resizeChallengeCanvas() {
+            if (chCanvas && chCanvas.parentElement) {
+                chCanvas.width = chCanvas.parentElement.clientWidth;
+                chCanvas.height = chCanvas.parentElement.clientHeight;
+            }
+        }
+
+        // Initialize on load
+        window.onload = function() {
+            loadSampleCircuit();
+            loadChallenge(1);
+        };
+    </script>
+</body>
+</html>
